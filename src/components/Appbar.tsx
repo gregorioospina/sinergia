@@ -73,18 +73,18 @@ const useStyles = makeStyles((theme: Theme) =>
         backgroundColor: "whitesmoke",
         color: "black"
     }
-  }),
+  }), 
 
 );
 
-export default function SearchAppBar() {
+export default function SearchAppBar({returnHome}) {
   const classes = useStyles();
 
   return (
     <div className={classes.root}>
       <AppBar position="static" classes={{root: classes.appbarRoot}}>
         <Toolbar>
-          <Typography className={classes.title} variant="h6" noWrap>
+          <Typography style={{cursor:"pointer"}}onClick={() => returnHome()} className={classes.title} variant="h6" noWrap>
             Sinergia
           </Typography>
           <div className={classes.search}>

@@ -8,70 +8,97 @@ import volunteer_bottom from "../images/volunteer_bottom.png";
 import donate_top from "../images/donate_top.png";
 import donate_bottom from "../images/donate_bottom.png";
 
-import blog_top from "../images/blog_top.png"; 
+import blog_top from "../images/blog_top.png";
 import blog_bottom from "../images/blog_bottom.png";
 
-import charities_top from "../images/signin_top.png";
-import charities_bottom from "../images/signin_bottom.png";
+import charities_top from "../images/charities_top.png";
+import charities_bottom from "../images/charities_bottom.png";
 import SearchAppBar from '../components/Appbar';
+import Donate from './Donate';
+import Volunteer from './Volunteer';
+import Blog from './Blog';
+import Charities from './Charities';
 
+export interface IColor {
+	main: string,
+	secondary: string,
+	tertiary: string;
+}
 
-interface IHome {
- 
+export interface IStyleColors {
+	donate: IColor,
+	volunteer: IColor,
+	blog: IColor,
+	charities: IColor,
+	background: string,
 }
 
 export const COLORS = {
-	donate: { main: "#55b9f3", secondary: "#75ffff", tertiary: "#357397" },
-	volunteer: { main: "#f3537b", secondary: "#ff73aa", tertiary: "#97334c" },
-	blog: { main: "#9353f3", secondary: "#cb73ff", tertiary: "#5b3397" },
-	charities: { main: "#53f3be", secondary: "#99ffd2", tertiary: "#339776" },
-}
+	volunteer: { main: "#F8C531", secondary: "#ffe338", tertiary: "#d3a72a" },
+	blog: { main: "#2452A2", secondary: "#295eba", tertiary: "#1f468a" },
+	donate: { main: "#EA4254", secondary: "#ff4c61", tertiary: "#c73847" },
+	charities: { main: "#59BEBA", secondary: "#66dbd6", tertiary: "#4ca29e" },
+	background: "#E2E0E2",
+} as IStyleColors;
 
 const images = {
 	volunteer: { top: volunteer_top, bottom: volunteer_bottom },
-	charities: { top: blog_top, bottom: blog_bottom },
-	blog: { top: charities_top, bottom: charities_bottom },
+	blog: { top: blog_top, bottom: blog_bottom },
+	charities: { top: charities_top, bottom: charities_bottom },
 	donate: { top: donate_top, bottom: donate_bottom },
 };
 
-const Home = (props: IHome) => {
+const Home = () => {
 	const [clicked, setClicked] = useState<"donate" | "volunteer" | "charities" | "blog" | undefined>(undefined);
 	const [hovered, setHovered] = useState<"donate" | "volunteer" | "charities" | "blog" | undefined>(undefined);
+	const [buttonWidth, setButtonWidth] = useState<number>(50);
 	const theme = useTheme();
 	const mobile = useMediaQuery(theme.breakpoints.down("sm"));
 	const history = useHistory();
 
 	const getBColor = () => {
-		switch (hovered) {
-			case "donate":
-				return { color: COLORS.donate.main };
-			case "blog":
-				return { color: COLORS.blog.main };
-			case "volunteer":
-				return { color: COLORS.volunteer.main };
-			case "charities":
-				return { color: COLORS.charities.main };
-			default:
-				return { color: "aliceblue" };
+		if (clicked) {
+			switch (clicked) {
+				case "donate":
+					return { color: COLORS.donate.secondary };
+				case "blog":
+					return { color: COLORS.blog.secondary };
+				case "volunteer":
+					return { color: COLORS.volunteer.secondary };
+				case "charities":
+					return { color: COLORS.charities.secondary };
+				default:
+					return { color: COLORS.background };
+			}
+		} else {
+			switch (hovered) {
+				case "donate":
+					return { color: COLORS.donate.main };
+				case "blog":
+					return { color: COLORS.blog.main };
+				case "volunteer":
+					return { color: COLORS.volunteer.main };
+				case "charities":
+					return { color: COLORS.charities.main };
+				default:
+					return { color: COLORS.background };
+			}
 		}
 	};
+
 	const useStyles = makeStyles((theme: Theme) => createStyles({
+		root: {
+			backgroundColor: getBColor().color,
+			paddingTop: !clicked? 0 : 50,
+			transitionDuration: "400ms",
+			transitionProperty: "padding, background-color"
+		},
 		fullHeight: {
 			height: "100%",
 		},
 		fullWidthNoMargin: {
 			width: "100%",
 			margin: 0
-		},
-		box: {
-			backgroundColor: getBColor().color,
-			backgroundPosition: "center",
-			backgroundRepeat: "norepeat",
-			backgroundSize: "cover",
-			transitionProperty: "background-color",
-			transitionDuration: "150ms",
-			position: "relative",
-			zIndex: 100
 		},
 		bottomBackgroundImage: {
 			position: "fixed",
@@ -90,30 +117,21 @@ const Home = (props: IHome) => {
 			position: "fixed",
 			animation: "$topBackgroundEntrance 300ms",
 			zIndex: 0,
-			top: 20
+			top: 0
 		},
 		"@keyframes topBackgroundEntrance": {
 			from: {
 				top: -300,
-				zIndex: -10
 			},
 			to: {
-				top: 20,
-				zIndex: 0
+				top: 0,
 			}
 		},
 	}));
-
-	const reroute = (color: string, type: "donate" | "volunteer" | "charities" | "blog") => {
-		setClicked(type);
-		setTimeout(() => {
-			// history.push(`/${type}`);
-			setClicked(undefined);
-		}, 800);
-	};
+	const classes = useStyles();
 
 	const backgroundSpots = () => (
-		<Fade in={true} timeout={800} >
+		<Fade in={!clicked} timeout={800} >
 			<div>
 				<div className={classes.topBackgroundImage}>
 					<img src={hovered ? images[hovered].top : ""} style={{ width: "100%" }} />
@@ -125,118 +143,130 @@ const Home = (props: IHome) => {
 		</Fade>
 	);
 
-	const classes = useStyles();
+	const unClicked = () => (
+		<Grid container item xs={9} justify="center" alignItems="center">
+
+		<Grid item xs={7} style={{zIndex: 999}}>
+			<Typography
+				style={{
+					textTransform: "uppercase",
+					fontWeight: "bold",
+					color: hovered ? "white" : "black",
+					textShadow: hovered ? `2px 2px ${COLORS[hovered].tertiary}` : "2px 2px #55b9f3",
+					transitionDuration: "400ms",
+					transitionProperty: "color, text-shadow"
+				}
+				}
+				variant="h1" component="h1">
+				Sinergia
+		</Typography>
+			<Typography align="justify" style={{ padding: 20 }}>
+				Empoderando acciones sociales con la gente. Empoderando acciones sociales con la gente. Empoderando acciones sociales con la gente. Empoderando acciones sociales con la gente.
+		</Typography>
+		</Grid>
+		</Grid>
+
+	);
+
+	const renderClicked = () => {
+		switch (clicked) {
+			case "volunteer":
+				return <Volunteer />;
+			case "blog":
+				return <Blog />;
+			case "charities":
+				return <Charities />;
+			case "donate":
+				return <Donate colors={COLORS.donate}/>;
+			default:
+				return unClicked();
+		}
+	};
+
 	return (
 		<React.Fragment>
-			<SearchAppBar />
-			<Box className={`${classes.fullHeight} ${classes.box}`}>
+			{clicked && <SearchAppBar returnHome={() => setClicked(undefined)} />}
+			<Grid container className={`${classes.fullHeight} ${classes.root}`}>
 				{backgroundSpots()}
-				<Grid container spacing={mobile ? 2 : 10} className={`${mobile ? "" : classes.fullHeight} ${classes.fullWidthNoMargin}`} style={{ zIndex: 1 }}>
-					<Grid item container xs={12} md={6} alignItems="center" justify="center" className={`${classes.fullWidthNoMargin}`}>
-						<Grid item style={{ zIndex: 100 }}>
-							<Fade in={true} timeout={1000}>
-								<Typography variant="h1" align="center"
-									style={{
-										textTransform: "uppercase",
-										fontWeight: "bold",
-										color: hovered? "white" : "black",
-										textShadow: hovered? `2px 2px ${COLORS[hovered].tertiary}` : "2px 2px #55b9f3",
-										transitionDuration: "400ms",
-										transitionProperty: "color, text-shadow"
-									}}>
-									Sinergia
-						</Typography>
-							</Fade>
-							<Typography variant="h6" align="center" style={{color: hovered? "white" : "black"}}>
-								Empoderando proyectos sociales con el poder de la gente.
-						</Typography>
-						</Grid>
-					</Grid>
-					<Grid onMouseLeave={() => setHovered(undefined)} item container spacing={1} xs={12} md={6} style={{ padding: "5vw", height: "100%" }} alignItems="center">
-						<Grid item container spacing={3}>
-							<Grid item xs={6} onMouseEnter={() => setHovered("donate")}>
-								<HomeButton
-									color={COLORS.donate}
-									onClick={() => reroute(COLORS.donate.main, "donate")}
-									message="Haz tu Donacion"
-								/>
-							</Grid>
-							<Grid item xs={6} onMouseEnter={() => setHovered("volunteer")}>
-								<HomeButton
-									color={COLORS.volunteer}
-									onClick={() => console.log("cool")}
-									message="Se un Voluntario"
-								/>
-							</Grid>
-							<Grid item xs={6} onMouseEnter={() => setHovered("blog")}>
-								<HomeButton
-									color={COLORS.blog}
-									onClick={() => console.log("cool")}
-									message="Blog"
+				{renderClicked()}
+				<Grid container item xs={3} justify="flex-end" className={classes.fullHeight} spacing={0}>
+					<HomeButton
+						width={buttonWidth}
+						text="Haz tu Aporte"
+						colors={COLORS.donate}
+						setHovered={() => setHovered("donate")}
+						unsetHovered={() => setHovered(undefined)}
+						hovered={hovered === "donate"}
+						onClick={() => setClicked("donate")}
+					/>
+					<HomeButton
+						width={buttonWidth}
+						text="Se Voluntario"
+						colors={COLORS.volunteer}
+						setHovered={() => setHovered("volunteer")}
+						unsetHovered={() => setHovered(undefined)}
+						hovered={hovered === "volunteer"}
+						onClick={() => setClicked("volunteer")}
 
-								/>
-							</Grid>
-							<Grid item xs={6} onMouseEnter={() => setHovered("charities")}>
-								<HomeButton
-									color={COLORS.charities}
-									onClick={() => console.log("cool")}
-									message="Conoce nuestras Fundaciones"
-
-								/>
-							</Grid>
-						</Grid>
-					</Grid>
+					/>
+					<HomeButton
+						width={buttonWidth}
+						text="Nuestras Fundaciones"
+						colors={COLORS.charities}
+						setHovered={() => setHovered("charities")}
+						unsetHovered={() => setHovered(undefined)}
+						hovered={hovered === "charities"}
+						onClick={() => setClicked("charities")}
+					/>
+					<HomeButton
+						width={buttonWidth}
+						text="Blog"
+						colors={COLORS.blog}
+						setHovered={() => setHovered("blog")}
+						unsetHovered={() => setHovered(undefined)}
+						hovered={hovered === "blog"}
+						onClick={() => setClicked("blog")}
+					/>
 				</Grid>
-			</Box>
+			</Grid>
 		</React.Fragment>
 	);
 };
 export default Home;
 
-interface IButtonColor {
-	main: string,
-	secondary: string,
-	tertiary: string,
-}
-
 interface IHomeButton {
+	width: number,
+	text: string,
+	hovered: boolean,
+	colors: IColor,
+	setHovered: Function,
+	unsetHovered: Function,
 	onClick: Function;
-	message: string;
-	color: IButtonColor;
 }
 
 const HomeButton = (props: IHomeButton) => {
-	const [hovered, setHovered] = useState<boolean>(false);
 	const useStyles = makeStyles((theme: Theme) => createStyles({
-		buttonRoot: {
-			height: "20vh",
-			width: "100%",
-			borderRadius: 10,
-			transitionDuration: "300ms",
-			transitionProperty: "box-shadow, height, width",
-			boxShadow: `${hovered ? 12 : 0}px ${hovered ? 12 : 0}px 0px ${props.color.tertiary}, 
-										 -${hovered ? 12 : 0}px -${hovered ? 12 : 0}px 0px ${props.color.secondary}`
+		homeButton: {
+			transitionProperty: "width",
+			transitionDuration: "200ms",
+			backgroundColor: props.colors.main,
+			width: props.hovered ? props.width * 1.5 : props.width,
+			cursor: "pointer",
+			zIndex: 1000
 		},
-		message: {
-			textTransform: "uppercase", 
-			color: "white", 
-			fontWeight: "bold",
-			textShadow: `1px 1px ${props.color.tertiary}`
+		homeButtonTitle: {
+			WebkitTransform: "rotate(-90deg)",
+			transform: "rotate(-90deg)",
+			whiteSpace: "nowrap",
+			textTransform: "uppercase"
 		}
 	}));
 	const classes = useStyles();
-
 	return (
-		<Button
-			onMouseEnter={() => setHovered(true)}
-			onMouseLeave={() => setHovered(false)}
-			classes={{ root: classes.buttonRoot }}
-			style={{ background: props.color.main }}
-			onClick={() => props.onClick()}
-		>
-			<Typography variant="h6" className={classes.message}>
-				{props.message}
+		<Grid item container justify="center" onClick={() => props.onClick()} className={classes.homeButton} onMouseEnter={() => props.setHovered()} onMouseLeave={() => props.unsetHovered()} alignItems="center">
+			<Typography className={classes.homeButtonTitle}>
+				{props.text}
 			</Typography>
-		</Button>
+		</Grid>
 	);
 };
